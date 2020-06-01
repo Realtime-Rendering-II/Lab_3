@@ -33,7 +33,7 @@ void mouse_callback(GLFWwindow *window, double x, double y);
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
-void upload_lights_and_position(GLuint shader, Light *light);
+void upload_light_and_position(GLuint shader, Light *light);
 
 void uploadMatrices(GLuint shader);
 
@@ -75,7 +75,7 @@ int main(int argc, const char *argv[]) {
     // the main loop where the object are drawn
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
-        // calculate the time it took to comoute the new frame to move the camera in a smoother way depending on the framerate
+        // calculate the time it took to compute the new frame to move the camera in a smoother way depending on the framerate
         delta_time = currentFrame - last_frame_time;
         last_frame_time = currentFrame;
         glfwGetFramebufferSize(window, &width, &height);
@@ -100,14 +100,17 @@ int main(int argc, const char *argv[]) {
         glEnable(GL_STENCIL_TEST);
 
         // Note: if you press the key 0 the light will start to rotate. This might help you to verify your shadows
-        // TODO 1: draw the relective plane in the stencil buffer (do not draw in the color or depth buffer yet)
+        // TODO 1: draw the reflective plane in the stencil buffer (do not draw in the color or depth buffer yet)
         // Note: glColorMask might help you to avoid drawing in the colorbuffer
 
         // TODO 3: compute and apply the the reflection matrix to the earth and the sun
 
         // TODO 4: draw the "mirrored" light source using the sun_shader and the "mirrored" earth using the normal_shader
+        // Note: if you want to draw the mirrored earth that is light up by the mirrored sun you have to upload the
+        // mirrored light position to the shader (you can use upload_light_and_position(...) )
 
         // TODO 5: reset the model matrices for the sun and the earth to the "unmirrored" matrices
+        // Note: do not forget to upload the "unmirrored" light position
 
         // clear the buffer bit to draw the shadow and the plane
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -117,13 +120,13 @@ int main(int argc, const char *argv[]) {
 
         // TODO 8: draw the "shadow" of the earth using the shadow_shader
 
-        // disbale the stencil test to draw the rest of the scene everywhere
+        // disable the stencil test to draw the rest of the scene everywhere
         glDisable(GL_STENCIL_TEST);
         // clear the depth bit so that the plane is not drawn over the reflected sphere
         glClear(GL_STENCIL_BUFFER_BIT);
 
-        upload_lights_and_position(normal_shader.get_program(), sun);
-        upload_lights_and_position(transparent_shader.get_program(), sun);
+        upload_light_and_position(normal_shader.get_program(), sun);
+        upload_light_and_position(transparent_shader.get_program(), sun);
 
         // TODO 9: find a way to draw the plane in a semitransparent way using the transparent_shader
         plane->draw(transparent_shader.get_program());
@@ -232,10 +235,10 @@ void uploadMatrices(GLuint shader) {
     glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, GL_FALSE, &view[0][0]);
 }
 
-//this function uploads values to the shader for further computation
-void upload_lights_and_position(GLuint shader, Light *light) {
+//this function uploads the light position, color as well as the camera position to the shader for further computation
+void upload_light_and_position(GLuint shader, Light *light) {
     if (rotation) {
-        glm::mat4 new_model_matrix = glm::rotate(light->get_model_matrix(), 0.0001f, glm::vec3{0, 1, 0});
+        glm::mat4 new_model_matrix = glm::rotate(light->get_model_matrix(), 0.001f, glm::vec3{0, 1, 0});
         light->set_model_matrix(new_model_matrix);
     }
 
@@ -312,7 +315,7 @@ glm::mat4 compute_shadow_matrix(glm::vec3 light_position, glm::vec3 plane_normal
 }
 
 // TODO 2: implement the computation of the reflection matrix
-// relfection matrix from: https://community.arm.com/developer/tools-software/graphics/b/blog/posts/combined-reflections-stereo-reflections-in-vr used
+// reflection matrix from: https://community.arm.com/developer/tools-software/graphics/b/blog/posts/combined-reflections-stereo-reflections-in-vr used
 glm::mat4 compute_reflection_matrix(glm::vec3 light_position, glm::vec3 plane_normal, glm::vec3 plane_position) {
     glm::mat4 matrix{1.0f};
     return matrix;

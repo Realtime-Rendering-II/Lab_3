@@ -95,3 +95,12 @@ cmake ..
 make
 ./main
 ```  
+
+Images:
+========================
+First start:  
+![Cmake](https://www.uni-weimar.de/~bexo5814/rrII/images/Default.png) 
+Rotation:  
+![Cmake](https://www.uni-weimar.de/~bexo5814/rrII/images/rotation.gif) 
+Rotation with shadow and reflection:  
+![Cmake](https://www.uni-weimar.de/~bexo5814/rrII/images/rotation_2.gif) 
